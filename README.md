@@ -27,8 +27,7 @@ centralizado en `constants/theme.js`:
 - `HABIT_ICONS` → emojis disponibles al crear un hábito
 - `WEEK_DAYS` → etiquetas de días para hábitos con frecuencia semanal
 
-Cambiando estos valores, se actualiza toda la app (no hay colores
-"hardcodeados" sueltos en las pantallas).
+Cambiando estos valores, se actualiza toda la app 
 
 ## que incluye esta app
 
