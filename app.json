@@ -1,0 +1,33 @@
+{
+  "expo": {
+    "name": "Gestor dee Hábitos",
+    "slug": "habit-tracker-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.tuusuario.habittracker"
+    },
+    "android": {
+      "package": "com.tuusuario.habittracker",
+      "adaptiveIcon": {
+        "backgroundColor": "#F7F7FC"
+      }
+    },
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#6C5CE7"
+        }
+      ],
+      "@react-native-community/datetimepicker",
+      "expo-status-bar"
+    ]
+  }
+}

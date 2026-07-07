@@ -1,0 +1,90 @@
+// ============================================================
+// HabitDetailScreen.js
+// Detalle de un hábito: calendario de completions, racha actual,
+// mejor racha, % de cumplimiento y acceso a edición.
+// ============================================================
+import React, { useLayoutEffect } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import { COLORS, FONT_SIZES, FONT_WEIGHTS, SPACING, RADIUS, SHADOW } from '../constants/theme';
+import { useHabits } from '../context/HabitContext';
+import Calendar from '../components/Calendar';
+import ProgressBar from '../components/ProgressBar';
+import { calculateStreaks, completionRate } from '../utils/streaks';
+
+export default function HabitDetailScreen({ route, navigation }) {
+  const { habitId } = route.params;
+  const { habits, toggleDate } = useHabits();
+  const habit = habits.find((h) => h.id === habitId);
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      title: habit?.name || 'Hábito',
+      headerRight: () => (
+        <TouchableOpacity onPress={() => navigation.navigate('CreateHabit', { habit })}>
+          <Text style={{ color: COLORS.primary, fontWeight: FONT_WEIGHTS.semibold, marginRight: SPACING.md }}>
+            Editar
+          </Text>
+        </TouchableOpacity>
+      ),
+    });
+  }, [navigation, habit]);
+
+  if (!habit) {
+    return (
+      <View style={styles.container}>
+        <Text>Este hábito ya no existe.</Text>
+      </View>
+    );
+  }
+
+  const { current, best } = calculateStreaks(habit);
+  const rate30 = completionRate(habit, 30);
+
+  return (
+    <ScrollView style={styles.container} contentContainerStyle={{ padding: SPACING.md }}>
+      <View style={styles.statsRow}>
+        <View style={styles.statCard}>
+          <Text style={styles.statEmoji}>🔥</Text>
+          <Text style={styles.statValue}>{current}</Text>
+          <Text style={styles.statLabel}>Racha actual</Text>
+        </View>
+        <View style={styles.statCard}>
+          <Text style={styles.statEmoji}>🏆</Text>
+          <Text style={styles.statValue}>{best}</Text>
+          <Text style={styles.statLabel}>Mejor racha</Text>
+        </View>
+      </View>
+
+      <View style={styles.card}>
+        <View style={styles.rateHeader}>
+          <Text style={styles.rateLabel}>Cumplimiento (últimos 30 días)</Text>
+          <Text style={styles.ratePercent}>{rate30}%</Text>
+        </View>
+        <ProgressBar percent={rate30} color={habit.color} />
+      </View>
+
+      <View style={styles.card}>
+        <Calendar habit={habit} onToggleDate={(dateKey) => toggleDate(habit.id, dateKey)} />
+      </View>
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: COLORS.background },
+  statsRow: { flexDirection: 'row', gap: SPACING.sm, marginBottom: SPACING.md },
+  statCard: {
+    flex: 1, backgroundColor: COLORS.surface, borderRadius: RADIUS.md, padding: SPACING.md,
+    alignItems: 'center', ...SHADOW.card,
+  },
+  statEmoji: { fontSize: FONT_SIZES.xl, marginBottom: 4 },
+  statValue: { fontSize: FONT_SIZES.xxl, fontWeight: FONT_WEIGHTS.bold, color: COLORS.text },
+  statLabel: { fontSize: FONT_SIZES.xs, color: COLORS.textSecondary, marginTop: 2 },
+  card: {
+    backgroundColor: COLORS.surface, borderRadius: RADIUS.md, padding: SPACING.md,
+    marginBottom: SPACING.md, ...SHADOW.card,
+  },
+  rateHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: SPACING.sm },
+  rateLabel: { fontSize: FONT_SIZES.sm, color: COLORS.textSecondary },
+  ratePercent: { fontSize: FONT_SIZES.sm, fontWeight: FONT_WEIGHTS.bold, color: COLORS.text },
+});
