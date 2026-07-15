@@ -23,17 +23,44 @@ export default function CreateHabitScreen({ navigation, route }) {
   const [color, setColor] = useState(editingHabit?.color || COLORS.habitPalette[0]);
   const [freqType, setFreqType] = useState(editingHabit?.frequency?.type || 'daily');
   const [days, setDays] = useState(editingHabit?.frequency?.days || [1, 2, 3, 4, 5]);
+
+  // Horario de ejecución
+  const [execTimeEnabled, setExecTimeEnabled] = useState(editingHabit?.executionTime?.enabled || false);
+  const [startTime, setStartTime] = useState(() => {
+    const d = new Date();
+    if (editingHabit?.executionTime?.enabled) {
+      d.setHours(editingHabit.executionTime.startHour, editingHabit.executionTime.startMinute, 0, 0);
+    } else {
+      d.setHours(9, 0, 0, 0);
+    }
+    return d;
+  });
+  const [endTime, setEndTime] = useState(() => {
+    const d = new Date();
+    if (editingHabit?.executionTime?.enabled) {
+      d.setHours(editingHabit.executionTime.endHour, editingHabit.executionTime.endMinute, 0, 0);
+    } else {
+      d.setHours(18, 0, 0, 0);
+    }
+    return d;
+  });
+
+  // Recordatorios
   const [reminderEnabled, setReminderEnabled] = useState(editingHabit?.reminder?.enabled || false);
+  const [customReminderEnabled, setCustomReminderEnabled] = useState(
+    editingHabit?.reminder?.enabled && editingHabit?.reminder?.useCustomTime ? true : false
+  );
   const [reminderTime, setReminderTime] = useState(() => {
     const d = new Date();
-    if (editingHabit?.reminder) {
+    if (editingHabit?.reminder?.enabled && editingHabit?.reminder?.useCustomTime) {
       d.setHours(editingHabit.reminder.hour, editingHabit.reminder.minute, 0, 0);
     } else {
       d.setHours(9, 0, 0, 0);
     }
     return d;
   });
-  const [showTimePicker, setShowTimePicker] = useState(false);
+
+  const [pickerType, setPickerType] = useState(null); // null | 'start' | 'end' | 'reminder'
 
   const toggleDay = (dayKey) => {
     setDays((prev) => (prev.includes(dayKey) ? prev.filter((d) => d !== dayKey) : [...prev, dayKey]));
@@ -56,15 +83,32 @@ export default function CreateHabitScreen({ navigation, route }) {
       return;
     }
 
+    if (freqType === 'weekly' && days.length === 0) {
+      Alert.alert('Frecuencia incorrecta', 'Seleccioná al menos un día de la semana.');
+      return;
+    }
+
     const habitData = {
       name: name.trim(),
       icon,
       color,
       frequency: freqType === 'daily' ? { type: 'daily' } : { type: 'weekly', days },
+      executionTime: {
+        enabled: execTimeEnabled,
+        startHour: startTime.getHours(),
+        startMinute: startTime.getMinutes(),
+        endHour: endTime.getHours(),
+        endMinute: endTime.getMinutes(),
+      },
       reminder: {
         enabled: reminderEnabled,
-        hour: reminderTime.getHours(),
-        minute: reminderTime.getMinutes(),
+        useCustomTime: customReminderEnabled,
+        hour: customReminderEnabled 
+          ? reminderTime.getHours() 
+          : (execTimeEnabled ? startTime.getHours() : 9),
+        minute: customReminderEnabled 
+          ? reminderTime.getMinutes() 
+          : (execTimeEnabled ? startTime.getMinutes() : 0),
       },
     };
 
@@ -155,8 +199,41 @@ export default function CreateHabitScreen({ navigation, route }) {
         </View>
       )}
 
-      <View style={styles.reminderRow}>
-        <Text style={styles.label}>Recordatorio diario</Text>
+      <View style={styles.switchRow}>
+        <Text style={styles.label}>Restringir horario de ejecución</Text>
+        <TouchableOpacity
+          style={[styles.toggle, execTimeEnabled && { backgroundColor: color }]}
+          onPress={() => setExecTimeEnabled((prev) => !prev)}
+        >
+          <View style={[styles.toggleKnob, execTimeEnabled && styles.toggleKnobActive]} />
+        </TouchableOpacity>
+      </View>
+
+      {execTimeEnabled && (
+        <View style={styles.timeRangeRow}>
+          <TouchableOpacity 
+            style={[styles.timeBox, { flex: 1, marginTop: 0 }]} 
+            onPress={() => setPickerType('start')}
+          >
+            <Text style={styles.timeLabel}>Desde</Text>
+            <Text style={styles.timeText}>
+              🕒 {startTime.getHours().toString().padStart(2, '0')}:{startTime.getMinutes().toString().padStart(2, '0')}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={[styles.timeBox, { flex: 1, marginTop: 0 }]} 
+            onPress={() => setPickerType('end')}
+          >
+            <Text style={styles.timeLabel}>Hasta</Text>
+            <Text style={styles.timeText}>
+              🕒 {endTime.getHours().toString().padStart(2, '0')}:{endTime.getMinutes().toString().padStart(2, '0')}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      <View style={styles.switchRow}>
+        <Text style={styles.label}>Recordatorios</Text>
         <TouchableOpacity
           style={[styles.toggle, reminderEnabled && { backgroundColor: color }]}
           onPress={handleReminderToggle}
@@ -166,22 +243,59 @@ export default function CreateHabitScreen({ navigation, route }) {
       </View>
 
       {reminderEnabled && (
-        <TouchableOpacity style={styles.timeBox} onPress={() => setShowTimePicker(true)}>
-          <Text style={styles.timeText}>
-            🔔 {reminderTime.getHours().toString().padStart(2, '0')}:{reminderTime.getMinutes().toString().padStart(2, '0')}
-          </Text>
-        </TouchableOpacity>
+        <View style={{ marginTop: SPACING.xs }}>
+          <View style={[styles.switchRow, { marginTop: 0, marginBottom: SPACING.sm }]}>
+            <Text style={styles.subLabel}>Horario de recordatorio personalizado</Text>
+            <TouchableOpacity
+              style={[styles.toggleSmall, customReminderEnabled && { backgroundColor: color }]}
+              onPress={() => setCustomReminderEnabled((prev) => !prev)}
+            >
+              <View style={[styles.toggleKnobSmall, customReminderEnabled && styles.toggleKnobSmallActive]} />
+            </TouchableOpacity>
+          </View>
+
+          {customReminderEnabled ? (
+            <TouchableOpacity style={[styles.timeBox, { marginTop: 0 }]} onPress={() => setPickerType('reminder')}>
+              <Text style={styles.timeText}>
+                🔔 {reminderTime.getHours().toString().padStart(2, '0')}:{reminderTime.getMinutes().toString().padStart(2, '0')}
+              </Text>
+            </TouchableOpacity>
+          ) : (
+            <View style={styles.infoBox}>
+              <Text style={styles.infoText}>
+                {execTimeEnabled 
+                  ? `🔔 Al inicio de la ejecución (${startTime.getHours().toString().padStart(2, '0')}:${startTime.getMinutes().toString().padStart(2, '0')})`
+                  : '🔔 A las 09:00 por defecto'}
+              </Text>
+            </View>
+          )}
+        </View>
       )}
 
-      {showTimePicker && (
+      {pickerType !== null && (
         <DateTimePicker
-          value={reminderTime}
+          value={
+            pickerType === 'start' 
+              ? startTime 
+              : pickerType === 'end' 
+              ? endTime 
+              : reminderTime
+          }
           mode="time"
           is24Hour
           display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-          onChange={(event, selected) => {
-            setShowTimePicker(Platform.OS === 'ios');
-            if (selected) setReminderTime(selected);
+          onValueChange={(event, selected) => {
+            if (selected) {
+              if (pickerType === 'start') setStartTime(selected);
+              else if (pickerType === 'end') setEndTime(selected);
+              else if (pickerType === 'reminder') setReminderTime(selected);
+            }
+            if (Platform.OS !== 'ios') {
+              setPickerType(null);
+            }
+          }}
+          onDismiss={() => {
+            setPickerType(null);
           }}
         />
       )}
@@ -263,4 +377,25 @@ const styles = StyleSheet.create({
   saveBtnText: { color: COLORS.white, fontSize: FONT_SIZES.md, fontWeight: FONT_WEIGHTS.bold },
   deleteBtn: { marginTop: SPACING.md, paddingVertical: SPACING.md, alignItems: 'center', marginBottom: SPACING.xl },
   deleteBtnText: { color: COLORS.danger, fontWeight: FONT_WEIGHTS.semibold },
+  switchRow: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: SPACING.md,
+  },
+  timeRangeRow: {
+    flexDirection: 'row', gap: SPACING.md, marginTop: SPACING.sm,
+  },
+  timeLabel: {
+    fontSize: FONT_SIZES.xs, color: COLORS.textSecondary, marginBottom: 2, textTransform: 'uppercase', fontWeight: FONT_WEIGHTS.medium,
+  },
+  subLabel: {
+    fontSize: FONT_SIZES.sm, color: COLORS.textSecondary, fontWeight: FONT_WEIGHTS.medium,
+  },
+  toggleSmall: {
+    width: 42, height: 24, borderRadius: RADIUS.full, backgroundColor: COLORS.border, padding: 2, justifyContent: 'center',
+  },
+  toggleKnobSmall: { width: 18, height: 18, borderRadius: RADIUS.full, backgroundColor: COLORS.white },
+  toggleKnobSmallActive: { transform: [{ translateX: 18 }] },
+  infoBox: {
+    marginTop: SPACING.sm, backgroundColor: COLORS.surface, borderStyle: 'dashed', borderWidth: 1, borderColor: COLORS.border, borderRadius: RADIUS.md, padding: SPACING.md, alignItems: 'center',
+  },
+  infoText: { fontSize: FONT_SIZES.sm, color: COLORS.textSecondary, fontWeight: FONT_WEIGHTS.medium },
 });

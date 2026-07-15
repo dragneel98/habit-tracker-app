@@ -5,9 +5,11 @@
 // en AsyncStorage automáticamente.
 // ============================================================
 import React, { createContext, useContext, useEffect, useReducer } from 'react';
+import { Alert } from 'react-native';
 import { loadHabits, saveHabits } from '../utils/storage';
-import { todayKey } from '../utils/dates';
+import { todayKey, isWithinExecutionWindow } from '../utils/dates';
 import { scheduleHabitReminder, cancelHabitReminder } from '../utils/notifications';
+import { isScheduledDay } from '../utils/streaks';
 
 const HabitContext = createContext(null);
 
@@ -73,43 +75,101 @@ export function HabitProvider({ children }) {
       icon: habit.icon,
       color: habit.color,
       frequency: habit.frequency, // { type: 'daily' } | { type: 'weekly', days: [1,3,5] }
-      reminder: habit.reminder,   // { enabled, hour, minute }
+      executionTime: habit.executionTime, // { enabled, startHour, startMinute, endHour, endMinute }
+      reminder: habit.reminder,   // { enabled, useCustomTime, hour, minute }
       completions: {},
       createdAt: new Date().toISOString(),
-      notificationId: null,
+      notificationIds: [],
     };
 
     if (newHabit.reminder?.enabled) {
-      newHabit.notificationId = await scheduleHabitReminder(newHabit);
+      newHabit.notificationIds = await scheduleHabitReminder(newHabit);
     }
 
     dispatch({ type: 'ADD_HABIT', payload: newHabit });
   };
 
   const updateHabit = async (habit) => {
-    if (habit.notificationId) {
-      await cancelHabitReminder(habit.notificationId);
+    if (habit.notificationIds || habit.notificationId) {
+      await cancelHabitReminder(habit.notificationIds || habit.notificationId);
+      habit.notificationIds = [];
       habit.notificationId = null;
     }
     if (habit.reminder?.enabled) {
-      habit.notificationId = await scheduleHabitReminder(habit);
+      habit.notificationIds = await scheduleHabitReminder(habit);
     }
     dispatch({ type: 'UPDATE_HABIT', payload: habit });
   };
 
   const deleteHabit = async (habitId) => {
     const habit = state.habits.find((h) => h.id === habitId);
-    if (habit?.notificationId) {
-      await cancelHabitReminder(habit.notificationId);
+    if (habit) {
+      const ids = habit.notificationIds || habit.notificationId;
+      if (ids) {
+        await cancelHabitReminder(ids);
+      }
     }
     dispatch({ type: 'DELETE_HABIT', payload: habitId });
   };
 
   const toggleToday = (habitId) => {
+    const habit = state.habits.find((h) => h.id === habitId);
+    if (!habit) return;
+    
+    const today = new Date();
+    const dayLabels = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+    const currentDayName = dayLabels[today.getDay()];
+
+    if (!isScheduledDay(habit, today)) {
+      Alert.alert(
+        'Hábito no programado',
+        `Este hábito no está programado para ejecutarse hoy (${currentDayName}).`
+      );
+      return;
+    }
+    if (!isWithinExecutionWindow(habit, today)) {
+      const { startHour, startMinute, endHour, endMinute } = habit.executionTime;
+      const pad = (n) => String(n).padStart(2, '0');
+      Alert.alert(
+        'Fuera de horario',
+        `Este hábito solo se puede completar entre las ${pad(startHour)}:${pad(startMinute)} y las ${pad(endHour)}:${pad(endMinute)} (Hora detectada en el dispositivo: ${pad(today.getHours())}:${pad(today.getMinutes())}).`
+      );
+      return;
+    }
+
     dispatch({ type: 'TOGGLE_COMPLETION', payload: { habitId, dateKey: todayKey() } });
   };
 
   const toggleDate = (habitId, dateKey) => {
+    const habit = state.habits.find((h) => h.id === habitId);
+    if (!habit) return;
+
+    const targetDate = new Date(dateKey + 'T12:00:00'); // Evitar problemas de huso horario
+    const dayLabels = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+
+    if (!isScheduledDay(habit, targetDate)) {
+      const targetDayName = dayLabels[targetDate.getDay()];
+      Alert.alert(
+        'Hábito no programado', 
+        `Este hábito no está programado para este día (${targetDayName}).`
+      );
+      return;
+    }
+
+    const isTargetToday = dateKey === todayKey();
+    if (isTargetToday) {
+      const today = new Date();
+      if (!isWithinExecutionWindow(habit, today)) {
+        const { startHour, startMinute, endHour, endMinute } = habit.executionTime;
+        const pad = (n) => String(n).padStart(2, '0');
+        Alert.alert(
+          'Fuera de horario',
+          `Este hábito solo se puede completar entre las ${pad(startHour)}:${pad(startMinute)} y las ${pad(endHour)}:${pad(endMinute)} (Hora detectada en el dispositivo: ${pad(today.getHours())}:${pad(today.getMinutes())}).`
+        );
+        return;
+      }
+    }
+
     dispatch({ type: 'TOGGLE_COMPLETION', payload: { habitId, dateKey } });
   };
 

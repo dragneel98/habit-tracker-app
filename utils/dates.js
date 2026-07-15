@@ -43,3 +43,20 @@ export const MONTH_NAMES = [
   'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
   'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
 ];
+
+export function isWithinExecutionWindow(habit, date = new Date()) {
+  if (!habit.executionTime || !habit.executionTime.enabled) return true;
+  const currentHour = date.getHours();
+  const currentMinute = date.getMinutes();
+  const start = Number(habit.executionTime.startHour) * 60 + Number(habit.executionTime.startMinute);
+  const end = Number(habit.executionTime.endHour) * 60 + Number(habit.executionTime.endMinute);
+  const current = currentHour * 60 + currentMinute;
+  
+  if (start <= end) {
+    return current >= start && current <= end;
+  } else {
+    // Caso especial donde el rango cruza la medianoche (ej. de 23:00 a 02:00)
+    return current >= start || current <= end;
+  }
+}
+

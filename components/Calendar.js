@@ -8,6 +8,7 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { COLORS, FONT_SIZES, FONT_WEIGHTS, SPACING, RADIUS } from '../constants/theme';
 import { getMonthMatrix, toKey, MONTH_NAMES } from '../utils/dates';
+import { isScheduledDay } from '../utils/streaks';
 
 export default function Calendar({ habit, onToggleDate }) {
   const [cursor, setCursor] = useState(new Date());
@@ -45,6 +46,8 @@ export default function Calendar({ habit, onToggleDate }) {
           const key = toKey(date);
           const done = !!completions[key];
           const isToday = key === today;
+          const isScheduled = isScheduledDay(habit, date);
+
           return (
             <TouchableOpacity
               key={idx}
@@ -52,7 +55,9 @@ export default function Calendar({ habit, onToggleDate }) {
                 styles.cell,
                 done && { backgroundColor: habit.color },
                 isToday && !done && styles.todayOutline,
+                !isScheduled && styles.cellDisabled,
               ]}
+              disabled={!isScheduled}
               onPress={() => onToggleDate(key)}
             >
               <Text style={[styles.cellText, done && styles.cellTextDone]}>{date.getDate()}</Text>
@@ -96,4 +101,5 @@ const styles = StyleSheet.create({
   },
   cellText: { color: COLORS.text, fontSize: FONT_SIZES.sm },
   cellTextDone: { color: COLORS.white, fontWeight: FONT_WEIGHTS.bold },
+  cellDisabled: { opacity: 0.18 },
 });
