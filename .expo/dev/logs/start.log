@@ -297,3 +297,30 @@
 {"_e":"metro:bundling:done","_t":1784075534267,"id":"8","total":1,"ms":45.6489}
 {"_e":"metro:client_log","_t":1784075538248,"level":"warn","data":["expo-notifications: Android Push notifications (remote notifications) functionality provided by expo-notifications was removed from Expo Go with the release of SDK 53. Use a development build instead of Expo Go. Learn more at https://docs.expo.dev/develop/development-builds/introduction/."]}
 {"_e":"metro:client_log","_t":1784075538249,"level":"warn","data":["`expo-notifications` functionality is not fully supported in Expo Go:\nWe recommend you instead use a development build to avoid limitations. Learn more: https://expo.fyi/dev-client."]}
+{"_e":"root:init","_t":1784076613872,"format":"v0-jsonl","version":"57.0.4"}
+{"_e":"env:mode","_t":1784076613873,"nodeEnv":"development","babelEnv":"development","mode":"development"}
+{"_e":"env:load","_t":1784076613877,"mode":"development","files":[],"env":{}}
+{"_e":"devserver:start","_t":1784076614535,"mode":"development","web":true,"baseUrl":"","asyncRoutes":false,"routerRoot":"../..\\..\\app","serverComponents":false,"serverActions":false,"serverRendering":false,"apiRoutes":false,"exporting":false}
+{"_e":"metro:config","_t":1784076615223,"serverRoot":"../..\\..","projectRoot":"../..\\..","exporting":false,"flags":{"autolinkingModuleResolution":false,"serverActions":false,"serverComponents":false,"reactCompiler":false,"optimizeGraph":false,"treeshaking":false,"logbox":false}}
+{"_e":"metro:instantiate","_t":1784076628902,"atlas":false,"workers":8,"host":"::","port":8081}
+{"_e":"metro:bundling:started","_t":1784076642865,"id":"1","platform":"android","environment":null,"entry":"node_modules\\expo\\AppEntry.js"}
+{"_e":"metro:bundling:progress","_t":1784076642865,"id":"1","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1784076642870,"id":"1","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1784076642972,"id":"1","progress":0.029905591045282377,"total":133,"current":23}
+{"_e":"metro:bundling:progress","_t":1784076643072,"id":"1","progress":0.20134779750164367,"total":234,"current":105}
+{"_e":"metro:bundling:progress","_t":1784076643173,"id":"1","progress":0.32072573927530196,"total":392,"current":222}
+{"_e":"metro:bundling:progress","_t":1784076643273,"id":"1","progress":0.6148348480386261,"total":491,"current":385}
+{"_e":"metro:bundling:progress","_t":1784076643388,"id":"1","progress":0.7901234567901234,"total":558,"current":496}
+{"_e":"metro:bundling:progress","_t":1784076643506,"id":"1","progress":0.8823767550155807,"total":676,"current":635}
+{"_e":"metro:bundling:progress","_t":1784076643615,"id":"1","progress":0.9971530263553054,"total":702,"current":701}
+{"_e":"metro:bundling:progress","_t":1784076644017,"id":"1","progress":0.999,"total":702,"current":702}
+{"_e":"metro:bundling:progress","_t":1784076644117,"id":"1","progress":0.999,"total":784,"current":762}
+{"_e":"metro:bundling:progress","_t":1784076644221,"id":"1","progress":0.999,"total":788,"current":787}
+{"_e":"metro:bundling:progress","_t":1784076644870,"id":"1","progress":0.999,"total":788,"current":788}
+{"_e":"metro:bundling:progress","_t":1784076644969,"id":"1","progress":0.999,"total":912,"current":832}
+{"_e":"metro:bundling:progress","_t":1784076645069,"id":"1","progress":0.999,"total":1005,"current":1000}
+{"_e":"metro:bundling:progress","_t":1784076645175,"id":"1","progress":0.999,"total":1010,"current":1008}
+{"_e":"metro:bundling:progress","_t":1784076645797,"id":"1","progress":0.999,"total":1010,"current":1009}
+{"_e":"metro:bundling:done","_t":1784076645878,"id":"1","total":1010,"ms":3012.7533}
+{"_e":"metro:client_log","_t":1784076647823,"level":"warn","data":["expo-notifications: Android Push notifications (remote notifications) functionality provided by expo-notifications was removed from Expo Go with the release of SDK 53. Use a development build instead of Expo Go. Learn more at https://docs.expo.dev/develop/development-builds/introduction/."]}
+{"_e":"metro:client_log","_t":1784076647823,"level":"warn","data":["`expo-notifications` functionality is not fully supported in Expo Go:\nWe recommend you instead use a development build to avoid limitations. Learn more: https://expo.fyi/dev-client."]}
