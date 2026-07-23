@@ -10,10 +10,10 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.tuusuario.habittracker"
+      "bundleIdentifier": "com.habittracker.app"
     },
     "android": {
-      "package": "com.tuusuario.habittracker",
+      "package": "com.habittracker.app",
       "adaptiveIcon": {
         "backgroundColor": "#F7F7FC"
       }
@@ -22,7 +22,6 @@
       [
         "expo-notifications",
         {
-          "icon": "./assets/notification-icon.png",
           "color": "#6C5CE7"
         }
       ],

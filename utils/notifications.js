@@ -1,27 +1,49 @@
 // ============================================================
 // notifications.js
 // Programación de recordatorios locales con expo-notifications.
+// Incluye tolerancia a fallos para desarrollo en Expo Go.
 // ============================================================
 import * as Notifications from 'expo-notifications';
-import { Platform } from 'react-native';
+import Constants from 'expo-constants';
 
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-  }),
-});
+// Detecta si la app se ejecuta dentro del cliente genérico Expo Go
+const isExpoGo = Constants.appOwnership === 'expo' || Constants.executionEnvironment === 'storeClient';
+
+try {
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: false,
+    }),
+  });
+} catch (e) {
+  console.warn('[Notifications] No se pudo configurar el handler:', e.message);
+}
 
 export async function requestNotificationPermission() {
-  const { status } = await Notifications.requestPermissionsAsync();
-  return status === 'granted';
+  if (isExpoGo) {
+    console.log('[Notifications] Ejecutando en Expo Go: Omitiendo solicitud de permisos nativos.');
+    return true;
+  }
+
+  try {
+    const { status } = await Notifications.requestPermissionsAsync();
+    return status === 'granted';
+  } catch (e) {
+    console.warn('[Notifications] Error al solicitar permisos:', e.message);
+    return false;
+  }
 }
 
 // Programa recordatorios para un hábito.
-// Soporta programar en días específicos y devuelve un array con los IDs creados.
 export async function scheduleHabitReminder(habit) {
   if (!habit.reminder || !habit.reminder.enabled) return [];
+
+  if (isExpoGo) {
+    console.log(`[Notifications] Expo Go detectado. Mock programado para "${habit.name}" sin bloquear la app.`);
+    return ['mock-notification-id-' + Date.now()];
+  }
 
   let hour = 9;
   let minute = 0;
@@ -61,7 +83,6 @@ export async function scheduleHabitReminder(habit) {
         ids.push(id);
       }
     } else {
-      // Programar un recordatorio diario recurrente
       const id = await Notifications.scheduleNotificationAsync({
         content: {
           title: `${habit.icon || '✅'} ${habit.name}`,
@@ -77,7 +98,7 @@ export async function scheduleHabitReminder(habit) {
       ids.push(id);
     }
   } catch (e) {
-    console.warn('Error al programar recordatorio:', e);
+    console.warn('[Notifications] Error al programar recordatorio:', e.message);
   }
 
   return ids;
@@ -85,6 +106,8 @@ export async function scheduleHabitReminder(habit) {
 
 export async function cancelHabitReminder(notificationIdOrIds) {
   if (!notificationIdOrIds) return;
+  if (isExpoGo) return;
+
   const ids = Array.isArray(notificationIdOrIds) ? notificationIdOrIds : [notificationIdOrIds];
   for (const id of ids) {
     if (!id) continue;

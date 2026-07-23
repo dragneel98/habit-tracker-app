@@ -14,6 +14,7 @@ import CreateHabitScreen from '../screens/CreateHabitScreen';
 import HabitDetailScreen from '../screens/HabitDetailScreen';
 import StatsScreen from '../screens/StatsScreen';
 import { COLORS, FONT_SIZES, FONT_WEIGHTS } from '../constants/theme';
+import { Ionicons } from '@expo/vector-icons';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -47,6 +48,7 @@ function TabIcon({ emoji, focused }) {
   return <Text style={{ fontSize: 20, opacity: focused ? 1 : 0.5 }}>{emoji}</Text>;
 }
 
+
 export default function AppNavigator() {
   return (
     <NavigationContainer>
@@ -61,7 +63,13 @@ export default function AppNavigator() {
         <Tab.Screen
           name="Inicio"
           component={HomeStack}
-          options={{ tabBarIcon: ({ focused }) => <TabIcon emoji="🏠" focused={focused} /> }}
+          options={{
+            tabBarIcon: ({ focused }) => <Ionicons
+              name="home"
+              size={24}
+              color="black"
+            />
+          }}
         />
         <Tab.Screen
           name="Estadísticas"

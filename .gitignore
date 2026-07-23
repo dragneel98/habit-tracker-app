@@ -1,1 +1,12 @@
-node_modules
+node_modules/
+.expo/
+dist/
+*.orig.*
+
+# Si decides mantener la carpeta android/ en Git, ignora sus temporales globales:
+android/build/
+android/.gradle/
+android/app/build/
+android/local.properties
+android/.cxx/
+android/.kotlin/
